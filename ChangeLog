@@ -2,6 +2,13 @@
 *                     Changes done to Hexen sources                     *
 \***********************************************************************/
 
+-------------------------------- 0.51 -----------------------------------
+
+- Document used environment variables.
+- SDL_mixer enable/disable check in configure was wrong.
+- Fixed uninitialized bottom array for visplane structure, causing R_MapPlane 
+  errors.
+
 -------------------------------- 0.50 -----------------------------------
 
 - Response file readable as '-response <filename>' also with legacy '@filename'
