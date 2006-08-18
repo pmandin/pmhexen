@@ -3,6 +3,14 @@
 It is based on Hexen DOS sources, available on Ravensoft's ftp site.
 You need the PC version of Hexen (shareware or registered).
 
+* Controls:
+	- Read original Hexen documentation..
+
+* Environment variables:
+    HOME: user home directory.
+	  If set, configuration and saved games are put in $HOME/.hexen directory.
+	  If not set, configuration and saved games are put in current directory.
+
 * Common parameters:
 
 	'@filename' or '-response filename' to read parameters from a file.
@@ -34,9 +42,6 @@ You need the PC version of Hexen (shareware or registered).
 	Network: '-network ###'
 		unix:	Unix sockets network (default)
 		sting:	Sting sockets network (Atari only)
-
-* Controls:
-	- Read original Hexen documentation..
 
 -- 
 Patrice Mandin <pmandin@caramail.com>

@@ -4,6 +4,16 @@ Il est base sur les sources DOS de Hexen, disponible sur le site ftp de
 Ravensoft. Vous devez disposer de la version PC de Hexen (shareware
 ou enregistre).
 
+* Controles:
+	- Lisez la documentation originale de Hexen pour connaitre les touches.
+
+* Variables d'environnement:
+    HOME: repertoire de base de l'utilisateur.
+	  Si present, la configuration et les parties sont sauvees dans le
+	    repertoire $HOME/.hexen
+	  Si non present, la configuration et les parties sont placees dans le
+	    repertoire courant.
+
 * Parametres communs:
 
 	'@fichier' ou '-response fichier' pour lire les parametres a partir d'un
@@ -37,9 +47,6 @@ ou enregistre).
 	Reseau: '-network ###'
 		unix:	gestion Unix du reseau (par defaut)
 		sting:	gestion Sting du reseau (Atari seulement)
-
-* Controles:
-	- Lisez la documentation originale de Hexen pour connaitre les touches.
 
 -- 
 Patrice Mandin <pmandin@caramail.com>
