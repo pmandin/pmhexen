@@ -3,8 +3,8 @@
 // ** d_net.c : Heretic 2 : Raven Software, Corp.
 // **
 // ** $RCSfile: d_net.c,v $
-// ** $Revision: 1.1 $
-// ** $Date: 2006/08/18 20:49:16 $
+// ** $Revision: 1.2 $
+// ** $Date: 2006/08/18 20:52:59 $
 // ** $Author: patrice $
 // **
 // ** This version has the fixed ticdup code.
@@ -79,20 +79,20 @@ int     NetbufferSize (void)
 
 unsigned NetbufferChecksum (void)
 {
+#if 1	/* FIXME: endianness dependent */
+	return 0;
+#else
 	unsigned                c;
 	int             i,l;
 
 	c = 0x1234567;
-
-#if defined(NeXT) || defined(NORMALUNIX)
-	return 0;                       // byte order problems
-#endif
 
 	l = (NetbufferSize () - (int)&(((doomdata_t *)0)->retransmitfrom))/4;
 	for (i=0 ; i<l ; i++)
 		c += ((unsigned *)&netbuffer->retransmitfrom)[i] * (i+1);
 
 	return c & NCMD_CHECKSUM;
+#endif
 }
 
 int ExpandTics (int low)
