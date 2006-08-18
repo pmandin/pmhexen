@@ -48,7 +48,7 @@ AM_PATH_SDL( 1.2.0 , :, AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!]))
 
 # SDL_mixer
 AC_ARG_ENABLE(sdlmixer,
-	[  --enable-sdl-mixer      Use SDL mixer for music replay (default=yes)],
+	[  --enable-sdlmixer      Use SDL mixer for music replay (default=yes)],
 	[WANT_SDLMIXER=$withval], [WANT_SDLMIXER=yes])
 
 if test "x$WANT_SDLMIXER" = "xyes"; then
