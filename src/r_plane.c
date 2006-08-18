@@ -3,8 +3,8 @@
 // ** r_plane.c : Heretic 2 : Raven Software, Corp.
 // **
 // ** $RCSfile: r_plane.c,v $
-// ** $Revision: 1.1 $
-// ** $Date: 2006/08/18 20:49:16 $
+// ** $Revision: 1.2 $
+// ** $Date: 2006/08/18 20:51:12 $
 // ** $Author: patrice $
 // **
 // **************************************************************************
@@ -293,6 +293,7 @@ visplane_t *R_FindPlane(fixed_t height, int picnum,
 	check->minx = sysvideo.width;
 	check->maxx = -1;
 	memset(check->top,0xff,sizeof(unsigned short)*sysvideo.width);
+	memset(check->bottom,0,sizeof(unsigned short)*sysvideo.width);
 	return(check);
 }
 
@@ -353,6 +354,7 @@ visplane_t *R_CheckPlane(visplane_t *pl, int start, int stop)
 	pl->minx = start;
 	pl->maxx = stop;
 	memset(pl->top,0xff,sizeof(unsigned short)*sysvideo.width);
+	memset(pl->bottom,0,sizeof(unsigned short)*sysvideo.width);
 
 	return pl;
 }
@@ -621,7 +623,9 @@ void R_DrawPlanes(void)
 		planezlight = zlight[light];
 
 		pl->top[pl->maxx+1] = 0xffff;
+		pl->bottom[pl->maxx+1] = 0;
 		pl->top[pl->minx-1] = 0xffff;
+		pl->bottom[pl->minx-1] = 0;
 
 		stop = pl->maxx+1;
 		for(x = pl->minx; x <= stop; x++)
