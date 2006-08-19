@@ -2,6 +2,10 @@
 *                     Changes done to Hexen sources                     *
 \***********************************************************************/
 
+-------------------------------- 0.53 -----------------------------------
+
+- Fixed crash in audio on exit.
+
 -------------------------------- 0.52 -----------------------------------
 
 - Disable checksum on networked packets, allow networking with machines with
