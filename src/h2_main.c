@@ -3,8 +3,8 @@
 // ** h2_main.c : Heretic 2 : Raven Software, Corp.
 // **
 // ** $RCSfile: h2_main.c,v $
-// ** $Revision: 1.1 $
-// ** $Date: 2006/08/18 20:49:16 $
+// ** $Revision: 1.2 $
+// ** $Date: 2006/08/20 19:17:10 $
 // ** $Author: patrice $
 // **
 // **************************************************************************
@@ -26,6 +26,7 @@
 #include "i_video.h"
 #include "i_audio.h"
 #include "i_net.h"
+#include "i_cdmus.h"
 
 // MACROS ------------------------------------------------------------------
 
@@ -365,6 +366,10 @@ static void HandleArgs(void)
 	p=M_CheckParm ("-devparm");
     if (p) {
 		devparm = true;
+	}
+	p=M_CheckParm ("-cdmusic");
+    if (p) {
+		i_CDMusic = true;
 	}
 
 	// Process command line options

@@ -22,15 +22,6 @@
 
 // TYPES -------------------------------------------------------------------
 
-#if 0
-typedef struct {
-	short lengthMin;
-	short lengthSec;
-	int sectorStart;
-	int sectorLength;
-} AudioTrack_t;
-#endif
-
 typedef struct {
 	int audio_track;
 	int length;
@@ -48,7 +39,7 @@ typedef struct {
 
 int cd_Error;
 
-boolean i_CDMusic;
+boolean i_CDMusic = false;
 int i_CDTrack;
 int i_CDCurrentTrack;
 int i_CDMusicLength;
@@ -83,6 +74,9 @@ int I_CDMusInit(void)
 
 	memset(cd_AudioTracks, 0, sizeof(cd_AudioTracks));
 
+	if (SDL_InitSubSystem(SDL_INIT_CDROM)<0)
+		return -1;
+
 	if (SDL_CDNumDrives()<1)
 		return -1;
 
@@ -108,6 +102,14 @@ int I_CDMusInit(void)
 	}
 
 	return 0;
+}
+
+void I_CDMusShutdown(void)
+{
+	if (sdlcd==NULL)
+		return;
+
+	SDL_CDStop(sdlcd);
 }
 
 //==========================================================================

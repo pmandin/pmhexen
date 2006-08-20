@@ -20,6 +20,7 @@
 #include "i_video.h"
 #include "i_system.h"
 #include "i_net.h"
+#include "i_cdmus.h"
 
 // Public Data
 
@@ -134,6 +135,12 @@ void I_Init (void)
 #endif
 
 	I_InitAudio();
+	if (i_CDMusic) {
+		if (I_CDMusInit() == -1) {
+			fprintf(stderr, "Can not use CD for music replay\n");
+			i_CDMusic = false;
+		}
+	}
 	S_Init();
 	S_Start();
 }

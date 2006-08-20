@@ -1,4 +1,3 @@
-
 // i_cdmus.h
 
 #ifndef __ICDMUS__
@@ -15,6 +14,7 @@
 extern int cd_Error;
 
 int I_CDMusInit(void);
+void I_CDMusShutdown(void);
 int I_CDMusPlay(int track);
 int I_CDMusStop(void);
 int I_CDMusResume(void);

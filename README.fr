@@ -35,6 +35,7 @@ ou enregistre).
 	  par defaut, soit 8 Mo).
 	'-yieldcpu [on|off]' pour liberer le CPU de temps en temps (par defaut
 	  off sur Atari, on sur les autres systemes).
+	'-cdmusic' pour jouer la musique du CD au lieu du MIDI.
 
 	Utilisez Alt+Enter pour passer du mode plein ecran au mode fenetre.
 	Utilisez Alt+G pour capturer ou liberer la souris (pas sur Atari).
@@ -46,7 +47,7 @@ ou enregistre).
 	Video, Clavier, Souris, Audio, Joysticks et Joypads geres par SDL.
 		Voir README.SDL pour plus d'informations.
 
-	Reseau: '-network ###'
+	Reseau: '-network <type>'
 		unix:	gestion Unix du reseau (par defaut)
 		sting:	gestion Sting du reseau (Atari seulement)
 

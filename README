@@ -29,6 +29,7 @@ You need the PC version of Hexen (shareware or registered).
 	'-mem <n>' to change memory allocated to game in KB (8192 is default = 8MB).
 	'-yieldcpu [on|off]' to free some CPU time (default is off for Atari,
 	 and on for other systems).
+	'-cdmusic' to play music from CD instead of MIDI.
 
 	Use Alt+Enter to toggle between fullscreen and windowed mode.
 	Use Alt+G to toggle mouse grabbing (not on Atari).
@@ -40,7 +41,7 @@ You need the PC version of Hexen (shareware or registered).
 	Video, Keyboard, Mouse, Audio, Joysticks and Joypads now managed by SDL.
 		See README.SDL for information.
 
-	Network: '-network ###'
+	Network: '-network <type>'
 		unix:	Unix sockets network (default)
 		sting:	Sting sockets network (Atari only)
 
