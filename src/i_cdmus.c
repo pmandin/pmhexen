@@ -22,11 +22,18 @@
 
 // TYPES -------------------------------------------------------------------
 
+#if 0
 typedef struct {
 	short lengthMin;
 	short lengthSec;
 	int sectorStart;
 	int sectorLength;
+} AudioTrack_t;
+#endif
+
+typedef struct {
+	int audio_track;
+	int length;
 } AudioTrack_t;
 
 // EXTERNAL FUNCTION PROTOTYPES --------------------------------------------
@@ -74,6 +81,8 @@ int I_CDMusInit(void)
 {
 	int i;
 
+	memset(cd_AudioTracks, 0, sizeof(cd_AudioTracks));
+
 	if (SDL_CDNumDrives()<1)
 		return -1;
 
@@ -90,95 +99,15 @@ int I_CDMusInit(void)
 	for (i=0;i<sdlcd->numtracks;i++) {
 		if (sdlcd->track[i].type == SDL_AUDIO_TRACK) {
 			if (cd_FirstTrack==-1)
-				cd_FirstTrack = sdlcd->track[i].id;
-			cd_LastTrack = sdlcd->track[i].id;
+				cd_FirstTrack = cd_TrackCount;
+			cd_LastTrack = cd_TrackCount;
+			cd_AudioTracks[cd_TrackCount].audio_track = i /*sdlcd->track[i].id*/;
+			cd_AudioTracks[cd_TrackCount].length = sdlcd->track[i].length * CD_FPS;
 			cd_TrackCount++;
 		}
 	}
 
 	return 0;
-
-#if 0
-
-	// Set track variables
-	InputIOCTL(AUDIODISKINFO, cd_DiskInfoSeg);
-	cd_FirstTrack = cd_DiskInfo->lowTrack;
-	cd_LastTrack = cd_DiskInfo->highTrack;
-	if(cd_FirstTrack == 0 && cd_FirstTrack == cd_LastTrack)
-	{
-		cd_Error = CDERR_NOAUDIOTRACKS;
-		return -1;
-	}
-	cd_TrackCount = cd_LastTrack-cd_FirstTrack+1;
-	cd_LeadOutMin = cd_DiskInfo->startLeadOut>>16 & 0xFF;
-	cd_LeadOutSec = cd_DiskInfo->startLeadOut>>8 & 0xFF;
-	cd_LeadOutRed = cd_DiskInfo->startLeadOut;
-	cd_LeadOutSector = RedToSectors(cd_DiskInfo->startLeadOut);
-
-	// Create Red Book start, sector start, and sector length
-	// for all tracks
-	sect = cd_LeadOutSector;
-	for(i = cd_LastTrack; i >= cd_FirstTrack; i--)
-	{
-		cd_TrackInfo->track = i;
-		InputIOCTL(AUDIOTRACKINFO, cd_TrackInfoSeg);
-		if(i < MAX_AUDIO_TRACKS)
-		{
-			cd_AudioTracks[i].redStart = cd_TrackInfo->start;
-			cd_AudioTracks[i].sectorStart =
-				RedToSectors(cd_TrackInfo->start);
-			cd_AudioTracks[i].sectorLength =
-				sect-RedToSectors(cd_TrackInfo->start);
-		}
-		sect = RedToSectors(cd_TrackInfo->start);
-	}
-
-	// Create track lengths in minutes and seconds
-	if(cd_LastTrack >= MAX_AUDIO_TRACKS)
-	{
-		maxTrack = MAX_AUDIO_TRACKS-1;
-	}
-	else
-	{
-		maxTrack = cd_LastTrack;
-	}
-	cd_TrackInfo->track = cd_FirstTrack;
-	InputIOCTL(AUDIOTRACKINFO, cd_TrackInfoSeg);
-	startMin1 = (cd_TrackInfo->start >> 16);
-	startSec1 = (cd_TrackInfo->start >> 8);
-	for(i = cd_FirstTrack; i <= maxTrack; i++)
-	{
-		cd_TrackInfo->track = i+1;
-		if(i < cd_LastTrack)
-		{
-			InputIOCTL(AUDIOTRACKINFO, cd_TrackInfoSeg);
-			startMin2 = (cd_TrackInfo->start >> 16);
-			startSec2 = (cd_TrackInfo->start >> 8);
-		}
-		else
-		{
-			startMin2 = cd_LeadOutRed>>16;
-			startSec2 = cd_LeadOutRed>>8;
-		}
-		lengthSec = startSec2 - startSec1;
-		lengthMin = startMin2 - startMin1;
-		if(lengthSec < 0)
-		{
-			lengthSec += 60;
-			lengthMin--;
-		}
-		cd_AudioTracks[i].lengthMin = lengthMin;
-		cd_AudioTracks[i].lengthSec = lengthSec;
-		startMin1 = startMin2;
-		startSec1 = startSec2;
-	}
-
-	// Clip high tracks
-	cd_LastTrack = maxTrack;
-
-	OkInit = 1;
-	return 0;
-#endif
 }
 
 //==========================================================================
@@ -193,36 +122,13 @@ int I_CDMusInit(void)
 
 int I_CDMusPlay(int track)
 {
-	return -1;
-
-#if 0
-	int start;
-	int len;
-
 	if(track < cd_FirstTrack || track > cd_LastTrack)
-	{
-		cd_Error = CDERR_BADTRACK;
-		return(-1);
-	}
-	I_CDMusStop();
-	start = cd_AudioTracks[track].redStart;
-	len = cd_AudioTracks[track].sectorLength;
-	cd_PlayReq->addressMode = RED_MODE;
-	cd_PlayReq->startSector = start;
-	cd_PlayReq->numberToRead = len;
-	memset(&RegBlock, 0, sizeof(RegBlock));
-	RegBlock.eax = CDROM_SENDDEVICEREQ;
-	RegBlock.ecx = cd_CurDrive;
-	RegBlock.ebx = 0;
-	RegBlock.es = cd_PlayReqSeg;
-	DPMI_SimRealInt(MULTIPLEX_INT, &RegBlock);
-	if(cd_PlayReq->status&0x8000)
-	{
-		cd_Error = CDERR_DEVREQBASE+(cd_PlayReq->status)&0x00ff;
-		return(-1);
-	}
-	return(0);
-#endif
+		return -1;
+
+	if (sdlcd==NULL)
+		return -1;
+
+	return SDL_CDPlayTracks(sdlcd, track, 0, 1, 0);
 }
 
 //==========================================================================
@@ -293,7 +199,7 @@ int I_CDMusFirstTrack(void)
 
 int I_CDMusLastTrack(void)
 {
-	return cd_LastTrack;
+	return cd_LastTrack-1;
 }
 
 //==========================================================================
@@ -307,14 +213,8 @@ int I_CDMusLastTrack(void)
 
 int I_CDMusTrackLength(int track)
 {
-	return -1;
-#if 0
 	if(track < cd_FirstTrack || track > cd_LastTrack)
-	{
-		cd_Error = CDERR_BADTRACK;
 		return -1;
-	}
-	return cd_AudioTracks[track].lengthMin*60
-		+cd_AudioTracks[track].lengthSec;
-#endif
+
+	return cd_AudioTracks[track].length;
 }

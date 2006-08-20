@@ -6,6 +6,7 @@
 
 - Fixed crash in audio on exit.
 - Unrolled 4x rendering loops, a bit faster.
+- Rewritten CD music player for SDL.
 
 -------------------------------- 0.52 -----------------------------------
 
