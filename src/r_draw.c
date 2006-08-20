@@ -3,8 +3,8 @@
 // ** r_draw.c : Heretic 2 : Raven Software, Corp.
 // **
 // ** $RCSfile: r_draw.c,v $
-// ** $Revision: 1.1 $
-// ** $Date: 2006/08/18 20:49:16 $
+// ** $Revision: 1.2 $
+// ** $Date: 2006/08/20 17:42:06 $
 // ** $Author: patrice $
 // **
 // **************************************************************************
@@ -67,17 +67,30 @@ void R_DrawColumn (void)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
-	do
+# define RENDER_PIXEL	\
+	{	\
+		*dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];	\
+		dest += sysvideo.pitch; 	\
+		frac += fracstep;	\
+	}
+
 	{
-		*dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
-		dest += sysvideo.pitch;
-		frac += fracstep;
-	} while (count--);
+		int n = count>>2;
+		switch (count & 3) {
+			case 3: do {
+					RENDER_PIXEL;
+			case 2:		RENDER_PIXEL;
+			case 1:		RENDER_PIXEL;
+			case 0:		RENDER_PIXEL;
+				} while (n--); /* FIXME subq/bne */
+		}
+	}
+#undef RENDER_PIXEL
 }
 
 void R_DrawColumnLow (void)
 {
-	int			count;
+	int			count, n;
 	byte		*dest;
 	fixed_t		frac, fracstep;	
 
@@ -96,21 +109,30 @@ void R_DrawColumnLow (void)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
-	do
-	{
-		int color;
+#define RENDER_PIXEL	\
+	{	\
+		int spot;	\
+		spot = dc_colormap[dc_source[(frac>>FRACBITS)&127]];	\
+		*(unsigned short *)dest = spot|(spot<<8);	\
+		dest += sysvideo.pitch; 	\
+		frac += fracstep;	\
+	}	
 
-		color = dc_colormap[dc_source[(frac>>FRACBITS)&127]];
-		*dest++ = color;
-		*dest++ = color;
-		dest += sysvideo.pitch-2;
-		frac += fracstep;
-	} while (count--);
+	n = count>>2;
+	switch (count & 3) {
+		case 3: do {
+				RENDER_PIXEL;
+		case 2:		RENDER_PIXEL;
+		case 1:		RENDER_PIXEL;
+		case 0:		RENDER_PIXEL;
+			} while (n--); /* FIXME subq/bne */
+	}
+#undef RENDER_PIXEL
 }
 
 void R_DrawFuzzColumn (void)
 {
-	int			count;
+	int			count, n;
 	byte		*dest;
 	fixed_t		frac, fracstep;	
 
@@ -133,18 +155,28 @@ void R_DrawFuzzColumn (void)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
-	do
-	{
-		*dest = tinttable[*dest+
-			(dc_colormap[dc_source[(frac>>FRACBITS)&127]]<<8)];
-		dest += sysvideo.pitch;
-		frac += fracstep;
-	} while(count--);
+#define RENDER_PIXEL	\
+	{	\
+		*dest = tinttable[(*dest)+dc_colormap[dc_source[(frac>>FRACBITS)&127]]];	\
+		dest += sysvideo.pitch;	\
+		frac += fracstep;	\
+	}
+
+	n = count>>2;
+	switch (count & 3) {
+		case 3: do {
+				RENDER_PIXEL;
+		case 2:		RENDER_PIXEL;
+		case 1:		RENDER_PIXEL;
+		case 0:		RENDER_PIXEL;
+			} while (n--); /* FIXME subq/bne */
+	}
+#undef RENDER_PIXEL
 }
 
 void R_DrawFuzzColumnLow (void)
 {
-	int			count;
+	int			count, n;
 	byte		*dest;
 	fixed_t		frac, fracstep;	
 
@@ -167,17 +199,26 @@ void R_DrawFuzzColumnLow (void)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
-	do
-	{
-		int color;
-		
-		color = tinttable[*dest+
-			(dc_colormap[dc_source[(frac>>FRACBITS)&127]]<<8)];
-		*dest++ = color;
-		*dest++ = color;
-		dest += sysvideo.pitch-2;
-		frac += fracstep;
-	} while(count--);
+#define RENDER_PIXEL	\
+	{	\
+		int color;	\
+		\
+		color = tinttable[(*dest)+dc_colormap[dc_source[(frac>>FRACBITS)&127]]];	\
+		*((unsigned short *) dest) = color|(color<<8);	\
+		dest += sysvideo.pitch;	\
+		frac += fracstep;	\
+	}
+
+	n = count>>2;
+	switch (count & 3) {
+		case 3: do {
+				RENDER_PIXEL;
+		case 2:		RENDER_PIXEL;
+		case 1:		RENDER_PIXEL;
+		case 0:		RENDER_PIXEL;
+			} while (n--); /* FIXME subq/bne */
+	}
+#undef RENDER_PIXEL
 }
 
 //============================================================================
@@ -188,7 +229,7 @@ void R_DrawFuzzColumnLow (void)
 
 void R_DrawAltFuzzColumn (void)
 {
-	int			count;
+	int			count, n;
 	byte		*dest;
 	fixed_t		frac, fracstep;	
 
@@ -211,18 +252,28 @@ void R_DrawAltFuzzColumn (void)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
-	do
-	{
-		*dest = tinttable[((*dest)<<8)
-			+dc_colormap[dc_source[(frac>>FRACBITS)&127]]];
-		dest += sysvideo.pitch;
-		frac += fracstep;
-	} while(count--);
+#define RENDER_PIXEL	\
+	{	\
+		*dest = tinttable[((*dest)<<8)+dc_colormap[dc_source[(frac>>FRACBITS)&127]]];	\
+		dest += sysvideo.pitch;	\
+		frac += fracstep;	\
+	}
+
+	n = count>>2;
+	switch (count & 3) {
+		case 3: do {
+				RENDER_PIXEL;
+		case 2:		RENDER_PIXEL;
+		case 1:		RENDER_PIXEL;
+		case 0:		RENDER_PIXEL;
+			} while (n--); /* FIXME subq/bne */
+	}
+#undef RENDER_PIXEL
 }
 
 void R_DrawAltFuzzColumnLow (void)
 {
-	int			count;
+	int			count, n;
 	byte		*dest;
 	fixed_t		frac, fracstep;	
 
@@ -245,17 +296,26 @@ void R_DrawAltFuzzColumnLow (void)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
-	do
-	{
-		int color;
+#define RENDER_PIXEL	\
+	{	\
+		int color;	\
+		\
+		color = tinttable[((*dest)<<8)+dc_colormap[dc_source[(frac>>FRACBITS)&127]]];	\
+		*((unsigned short *) dest) = color|(color<<8);	\
+		dest += sysvideo.pitch;	\
+		frac += fracstep;	\
+	}
 
-		color = tinttable[((*dest)<<8)
-			+dc_colormap[dc_source[(frac>>FRACBITS)&127]]];
-		*dest++ = color;
-		*dest++ = color;
-		dest += sysvideo.pitch-2;
-		frac += fracstep;
-	} while(count--);
+	n = count>>2;
+	switch (count & 3) {
+		case 3: do {
+				RENDER_PIXEL;
+		case 2:		RENDER_PIXEL;
+		case 1:		RENDER_PIXEL;
+		case 0:		RENDER_PIXEL;
+			} while (n--); /* FIXME subq/bne */
+	}
+#undef RENDER_PIXEL
 }
 
 /*
@@ -289,12 +349,23 @@ void R_DrawTranslatedColumn (void)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
-	do
+#define RENDER_PIXEL	\
+	*dest = dc_colormap[dc_translation[dc_source[(frac>>FRACBITS)&127]]];	\
+	dest += sysvideo.pitch; 	\
+	frac += fracstep;
+
 	{
-		*dest = dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]];
-		dest += sysvideo.pitch;
-		frac += fracstep;
-	} while (count--);
+		int n = count>>2;
+		switch (count & 3) {
+			case 3: do {
+					RENDER_PIXEL;
+			case 2:		RENDER_PIXEL;
+			case 1:		RENDER_PIXEL;
+			case 0:		RENDER_PIXEL;
+				} while (n--); /* FIXME subq/bne */
+		}
+	}
+#undef RENDER_PIXEL
 }
 
 void R_DrawTranslatedColumnLow (void)
@@ -317,16 +388,30 @@ void R_DrawTranslatedColumnLow (void)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
-	do
-	{
-		int color;
+# define RENDER_PIXEL	\
+	{	\
+		int spot;	\
+		\
+		spot = dc_colormap[dc_translation[dc_source[(frac>>FRACBITS)&127]]]; 	\
+		\
+		*((unsigned short *) dest) = spot|(spot<<8);	\
+		\
+		dest += sysvideo.pitch;	\
+		frac += fracstep;	\
+	}
 
-		color = dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]];
-		*dest++ = color;
-		*dest++ = color;
-		dest += sysvideo.pitch-2;
-		frac += fracstep;
-	} while (count--);
+	{
+		int n = count>>2;
+		switch (count & 3) {
+			case 3: do {
+					RENDER_PIXEL;
+			case 2:		RENDER_PIXEL;
+			case 1:		RENDER_PIXEL;
+			case 0:		RENDER_PIXEL;
+				} while (n--); /* FIXME subq/bne */
+		}
+	}
+#undef RENDER_PIXEL
 }
 
 //============================================================================
@@ -355,13 +440,26 @@ void R_DrawTranslatedFuzzColumn (void)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
-	do
+#define RENDER_PIXEL	\
+	{	\
+		*dest =  tinttable[((*dest)<<8)	\
+			+dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]]];	\
+		dest += sysvideo.pitch; 	\
+		frac += fracstep;	\
+	}
+
 	{
-		*dest = tinttable[((*dest)<<8)
-			+dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]]];
-		dest += sysvideo.pitch;
-		frac += fracstep;
-	} while (count--);
+		int n = count>>2;
+		switch (count & 3) {
+			case 3: do {
+					RENDER_PIXEL;
+			case 2:		RENDER_PIXEL;
+			case 1:		RENDER_PIXEL;
+			case 0:		RENDER_PIXEL;
+				} while (n--); /* FIXME subq/bne */
+		}
+	}
+#undef RENDER_PIXEL
 }
 
 void R_DrawTranslatedFuzzColumnLow (void)
@@ -384,17 +482,31 @@ void R_DrawTranslatedFuzzColumnLow (void)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
-	do
-	{
-		int color;
+# define RENDER_PIXEL	\
+	{	\
+		int spot;	\
+		\
+		spot = tinttable[((*dest)<<8)	\
+			+dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]]];	\
+		\
+		*((unsigned short *) dest) = spot|(spot<<8);	\
+		\
+		dest += sysvideo.pitch;	\
+		frac += fracstep;	\
+	}
 
-		color = tinttable[((*dest)<<8)
-			+dc_colormap[dc_translation[dc_source[frac>>FRACBITS]]]];
-		*dest++ = color;
-		*dest++ = color;
-		dest += sysvideo.pitch-2;
-		frac += fracstep;
-	} while (count--);
+	{
+		int n = count>>2;
+		switch (count & 3) {
+			case 3: do {
+					RENDER_PIXEL;
+			case 2:		RENDER_PIXEL;
+			case 1:		RENDER_PIXEL;
+			case 0:		RENDER_PIXEL;
+				} while (n--); /* FIXME subq/bne */
+		}
+	}
+#undef RENDER_PIXEL
 }
 
 //--------------------------------------------------------------------------
@@ -448,7 +560,7 @@ void R_DrawSpan (void)
 {
 	fixed_t		xfrac, yfrac;
 	byte		*dest;
-	int			count, spot;
+	int			count;
 	
 #ifdef RANGECHECK
 	if (ds_x2 < ds_x1 || ds_x1<0 || ds_x2>=sysvideo.width 
@@ -462,22 +574,42 @@ void R_DrawSpan (void)
 	
 	dest = ylookup[ds_y] + columnofs[ds_x1];	
 	count = ds_x2 - ds_x1;
-	do
+
+# define RENDER_PIXEL	\
+	{	\
+	    int spot;	\
+		\
+		/* Current texture index in u,v. */	\
+		spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63); \
+		\
+		/* Lookup pixel from flat texture tile, */ \
+		/*  re-index using light/colormap. */ \
+		*dest++ = ds_colormap[ds_source[spot]];	\
+		\
+		/* Next step in u,v. */ \
+		xfrac += ds_xstep;	\
+		yfrac += ds_ystep;	\
+	}
+
 	{
-		spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
-		*dest++ = ds_colormap[ds_source[spot]];
-		xfrac += ds_xstep;
-		yfrac += ds_ystep;
-	} while (count--);
+		fixed_t xfrac = ds_xfrac, yfrac = ds_yfrac;
+
+		int n = count>>2;
+		switch (count & 3) {
+			case 3: do {
+					RENDER_PIXEL;
+			case 2:		RENDER_PIXEL;
+			case 1:		RENDER_PIXEL;
+			case 0:		RENDER_PIXEL;
+				} while (n--); /* FIXME subq/bne */
+		}
+	}
+#undef RENDER_PIXEL
 }
 
 void R_DrawSpanFlat (void) 
 { 
-    fixed_t		xfrac;
-    fixed_t		yfrac; 
     byte*		dest; 
-    unsigned short	count;
-	unsigned long color;
 	 
 #ifdef RANGECHECK 
     if (ds_x2 < ds_x1
@@ -488,48 +620,18 @@ void R_DrawSpanFlat (void)
 	I_Error( "R_DrawSpanFlat: %i to %i at %i",
 		 ds_x1,ds_x2,ds_y);
     }
-//	dscount++; 
 #endif 
-
-    
-    xfrac = ds_xfrac; 
-    yfrac = ds_yfrac; 
 	 
-    dest = ylookup[ds_y] + columnofs[ds_x1];
+	dest = ylookup[ds_y] + columnofs[ds_x1];
 
-    // We do not check for zero spans here?
-    count = ds_x2 - ds_x1; 
-
-	color = ds_colormap[*ds_source];
-	color |= (color<<24)|(color<<16)|(color<<8);
-
-	if ((((unsigned long)dest) & 1) && (count>1)) {
-		*dest++ = color;
-		count--;
-	}
-
-	if (count>4) {
-		unsigned long *dest2=(unsigned long *)dest;
-		int count2 = (count>>2)-1;
-		do {
-			*dest2++ = color;
-		} while (count2--); 
-		count -= (count2+1)<<2;
-		dest += (count2+1)<<2;
-	}
-
-	if (count>0) {
-		do {
-			*dest++ = color;
-		} while (count--); 
-	}	
-} 
+	memset(dest, ds_colormap[*ds_source], ds_x2 - ds_x1 +1);
+}
 
 void R_DrawSpanLow (void)
 {
 	fixed_t		xfrac, yfrac;
 	byte		*dest;
-	int			count, spot;
+	int			count;
 	
 #ifdef RANGECHECK
 	if (ds_x2 < ds_x1 || ds_x1<0 || ds_x2>=sysvideo.width 
@@ -543,26 +645,43 @@ void R_DrawSpanLow (void)
 	
 	dest = ylookup[ds_y] + columnofs[ds_x1<<1];
 	count = ds_x2 - ds_x1;
-	do
+
+# define RENDER_PIXEL	\
+	{	\
+	    int spot;	\
+		\
+		/* Current texture index in u,v. */	\
+		spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63); \
+		spot = ds_colormap[ds_source[spot]];	\
+		\
+		/* Lookup pixel from flat texture tile, */ \
+		/*  re-index using light/colormap. */ \
+		*(unsigned short *)dest = spot|(spot<<8);	\
+		dest += 2;	\
+		\
+		/* Next step in u,v. */ \
+		xfrac += ds_xstep;	\
+		yfrac += ds_ystep;	\
+	}
+
 	{
-		int color;
-		
-		spot = ((yfrac>>(16-6))&(63*64)) + ((xfrac>>16)&63);
-		color = ds_colormap[ds_source[spot]];
-		*dest++ = color;
-		*dest++ = color;
-		xfrac += ds_xstep;
-		yfrac += ds_ystep;
-	} while (count--);
+		fixed_t		xfrac = ds_xfrac, yfrac = ds_yfrac;
+		int n = count>>2;
+		switch (count & 3) {
+			case 3: do {
+					RENDER_PIXEL;
+			case 2:		RENDER_PIXEL;
+			case 1:		RENDER_PIXEL;
+			case 0:		RENDER_PIXEL;
+				} while (n--); /* FIXME subq/bne */
+		}
+	}
+#undef RENDER_PIXEL
 }
 
 void R_DrawSpanLowFlat (void) 
 { 
-    fixed_t		xfrac;
-    fixed_t		yfrac; 
     byte*		dest; 
-    unsigned short		count;
-	unsigned long color;
 	 
 #ifdef RANGECHECK 
     if (ds_x2 < ds_x1
@@ -573,41 +692,12 @@ void R_DrawSpanLowFlat (void)
 	I_Error( "R_DrawSpan: %i to %i at %i",
 		 ds_x1,ds_x2,ds_y);
     }
-//	dscount++; 
 #endif 
-	 
-    xfrac = ds_xfrac; 
-    yfrac = ds_yfrac; 
 
-    dest = ylookup[ds_y] + columnofs[ds_x1<<1];
-  
-    count = (ds_x2 - ds_x1)<<1;
+	dest = ylookup[ds_y] + columnofs[ds_x1<<1];
 
-	color = ds_colormap[*ds_source];
-	color |= (color<<24)|(color<<16)|(color<<8);
-
-	if ((((unsigned long)dest) & 1) && (count>1)) {
-		*dest++ = color;
-		count--;
-	}
-
-	if (count>4) {
-		unsigned long *dest2=(unsigned long *)dest;
-		int count2 = (count>>2)-1;
-		do {
-			*dest2++ = color;
-		} while (count2--); 
-		count -= (count2+1)<<2;
-		dest += (count2+1)<<2;
-	}
-
-	if (count>0) {
-		do {
-			*dest++ = color;
-		} while (count--); 
-	}	
+	memset(dest, ds_colormap[*ds_source], (ds_x2 - ds_x1 + 1)<<1);
 }
-
 
 /*
 ================
