@@ -43,9 +43,9 @@
 
 #include "sting/transprt.h"
 
+#include "h2def.h"
 #include "i_system.h"
 #include "i_net.h"
-#include "h2def.h"
 
 void	NetSend (void);
 boolean NetListen (void);
