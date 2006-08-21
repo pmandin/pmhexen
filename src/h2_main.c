@@ -3,8 +3,8 @@
 // ** h2_main.c : Heretic 2 : Raven Software, Corp.
 // **
 // ** $RCSfile: h2_main.c,v $
-// ** $Revision: 1.2 $
-// ** $Date: 2006/08/20 19:17:10 $
+// ** $Revision: 1.3 $
+// ** $Date: 2006/08/21 13:18:30 $
 // ** $Author: patrice $
 // **
 // **************************************************************************
@@ -359,9 +359,9 @@ static void HandleArgs(void)
 	}
 	p=M_CheckParm ("-mem");
     if (p && (p<myargc-1)) {
-		sysheap.kb_used = atoi(myargv[p+1]);
-		if (sysheap.kb_used<MINIMAL_HEAP_SIZE)
-			sysheap.kb_used=MINIMAL_HEAP_SIZE;
+		sysgame.kb_used = atoi(myargv[p+1]);
+		if (sysgame.kb_used<MINIMAL_HEAP_SIZE)
+			sysgame.kb_used=MINIMAL_HEAP_SIZE;
 	}
 	p=M_CheckParm ("-devparm");
     if (p) {

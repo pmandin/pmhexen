@@ -3,8 +3,8 @@
 // ** r_local.h : Heretic 2 : Raven Software, Corp.
 // **
 // ** $RCSfile: r_local.h,v $
-// ** $Revision: 1.1 $
-// ** $Date: 2006/08/18 20:49:17 $
+// ** $Revision: 1.2 $
+// ** $Date: 2006/08/21 13:18:31 $
 // ** $Author: patrice $
 // **
 // **************************************************************************
@@ -497,6 +497,7 @@ extern  fixed_t                 dc_texturemid;
 extern  byte                    *dc_source;             // first pixel in a column
 
 void    R_DrawColumn (void);
+void    R_DrawColumn060 (void);
 void    R_DrawColumnLow (void);
 void    R_DrawFuzzColumn (void);
 void    R_DrawFuzzColumnLow (void);

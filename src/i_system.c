@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #ifdef __MINT__
+#include <mint/cookie.h>
 #include <mint/osbind.h>
 #endif
 
@@ -36,9 +37,11 @@ enum {
 };
 #endif
 
-sysheap_t	sysheap={DEFAULT_HEAP_SIZE,NULL};
+sysgame_t	sysgame={DEFAULT_HEAP_SIZE,NULL,false};
 
 // Code
+
+static void I_InitFpu(void);
 
 int main(int argc, char **argv)
 {
@@ -134,6 +137,7 @@ void I_Init (void)
 	}
 #endif
 
+	I_InitFpu();
 	I_InitAudio();
 	if (i_CDMusic) {
 		if (I_CDMusInit() == -1) {
@@ -145,6 +149,47 @@ void I_Init (void)
 	S_Start();
 }
 
+static void I_InitFpu(void)
+{
+#ifdef __MINT__
+	unsigned long cpu_cookie;
+
+	if (Getcookie(C__CPU, &cpu_cookie) != C_FOUND) {
+		return;
+	}
+
+	cpu_cookie &= 0xffff;
+	if ((cpu_cookie<20) || (cpu_cookie>60)) {
+		return;
+	}
+
+	FixedMul = FixedMul020;
+	FixedDiv2 = FixedDiv2020;
+
+	if (cpu_cookie==60) {
+	    __asm__ __volatile__ (
+				".chip	68060\n"
+			"	fmove%.l	fpcr,d0\n"
+			"	andl	#~0x30,d0\n"
+			"	orb		#0x20,d0\n"
+			"	fmove%.l	d0,fpcr\n"
+#ifdef __M68020__
+			"	.chip	68020"
+#else
+			"	.chip	68000"
+#endif
+			: /* no return value */
+			: /* no input */
+			: /* clobbered registers */
+				"d0", "cc"
+		);
+
+		FixedMul = FixedMul060;
+		FixedDiv2 = FixedDiv2060;
+		sysgame.cpu060 = true;
+	}
+#endif
+}
 
 /*
 ===============
@@ -162,13 +207,13 @@ void I_Shutdown (void)
 	I_ShutdownNetwork();
 	I_ShutdownAudio();
 	I_ShutdownGraphics();
-	if (sysheap.zone) {
+	if (sysgame.zone) {
 #ifdef __MINT__
-		Mfree(sysheap.zone);
+		Mfree(sysgame.zone);
 #else
-		free(sysheap.zone);
+		free(sysgame.zone);
 #endif
-		sysheap.zone=NULL;
+		sysgame.zone=NULL;
 	}
 	SDL_Quit();
 }
@@ -190,16 +235,16 @@ void I_Error (char *error, ...)
 		exit(1);
 	}
 
-    va_list	argptr;
+	va_list	argptr;
 
-    // Message first.
-    va_start (argptr,error);
-    fprintf (stderr, "Error: ");
-    vfprintf (stderr,error,argptr);
-    fprintf (stderr, "\n");
-    va_end (argptr);
+	// Message first.
+	va_start (argptr,error);
+	fprintf (stderr, "Error: ");
+	vfprintf (stderr,error,argptr);
+	fprintf (stderr, "\n");
+	va_end (argptr);
 
-    fflush( stderr );
+	fflush( stderr );
 
 	firsttime=0;
 
@@ -252,26 +297,26 @@ byte *I_ZoneBase (int *size)
 	}
 	maximal_heap_size >>= 10;
 	maximal_heap_size -= 256;	/* Keep 128 KB */
-	if (sysheap.kb_used>maximal_heap_size)
-		sysheap.kb_used=maximal_heap_size;
+	if (sysgame.kb_used>maximal_heap_size)
+		sysgame.kb_used=maximal_heap_size;
 #endif
 
-    *size = sysheap.kb_used<<10;
+    *size = sysgame.kb_used<<10;
 
-	printf(" %d Kbytes allocated for zone\n",sysheap.kb_used);
+	printf(" %d Kbytes allocated for zone\n",sysgame.kb_used);
 
 #ifdef __MINT__
 	if (mxalloc_present) {
-		sysheap.zone = (void *)Mxalloc(*size, MX_PREFTTRAM);
+		sysgame.zone = (void *)Mxalloc(*size, MX_PREFTTRAM);
 		maximal_heap_size = Mxalloc(-1,MX_STRAM);
 	} else {
-		sysheap.zone = (void *)Malloc(*size);
+		sysgame.zone = (void *)Malloc(*size);
 		maximal_heap_size = Malloc(-1);
 	}
 	printf(" (%d Kbytes left for audio/video subsystem)\n", maximal_heap_size>>10);
 #else
-	sysheap.zone = malloc (*size);
+	sysgame.zone = malloc (*size);
 #endif
 
-    return (byte *) sysheap.zone;
+    return (byte *) sysgame.zone;
 }

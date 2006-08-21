@@ -4,9 +4,10 @@
 typedef struct {
 	int kb_used;
 	void *zone;
-} sysheap_t;
+	boolean cpu060;
+} sysgame_t;
 
-extern sysheap_t	sysheap;
+extern sysgame_t	sysgame;
 
 #define DEFAULT_HEAP_SIZE	8192	/* 8MB by default */
 #define MINIMAL_HEAP_SIZE	2500	/* 2.5MB minimum */

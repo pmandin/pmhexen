@@ -3,8 +3,8 @@
 // ** r_draw.c : Heretic 2 : Raven Software, Corp.
 // **
 // ** $RCSfile: r_draw.c,v $
-// ** $Revision: 1.2 $
-// ** $Date: 2006/08/20 17:42:06 $
+// ** $Revision: 1.3 $
+// ** $Date: 2006/08/21 13:18:31 $
 // ** $Author: patrice $
 // **
 // **************************************************************************
@@ -67,6 +67,63 @@ void R_DrawColumn (void)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
+#if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
+    __asm__ __volatile__ (
+	"moveql	#127,d0\n"
+"	swap	%1\n"
+"	swap	%2\n"
+"	andw	d0,%2\n"
+"	moveql	#0,d1\n"
+"	movew	%0,d2\n"	/* d2 = 3-(count&3) */
+"	notw	d2\n"
+"	andw	#3,d2\n"
+"	lea		R_DrawColumn_loop,a0\n"
+"	muluw	#R_DrawColumn_loop1-R_DrawColumn_loop,d2\n"
+"	lsrw	#2,%0\n"
+"	move	#4,ccr\n"
+"	jmp		a0@(0,d2:w)\n"
+
+"R_DrawColumn_loop:\n"
+"	moveb	%3@(0,%2:w),d1\n"
+"	addxl	%1,%2\n"
+"	moveb	%4@(0,d1:l),d1\n"
+"	andw	d0,%2\n"
+"	moveb	d1,%5@\n"
+"	addw	%6,%5\n"
+
+"R_DrawColumn_loop1:\n"
+"	moveb	%3@(0,%2:w),d1\n"
+"	addxl	%1,%2\n"
+"	moveb	%4@(0,d1:l),d1\n"
+"	andw	d0,%2\n"
+"	moveb	d1,%5@\n"
+"	addw	%6,%5\n"
+
+"	moveb	%3@(0,%2:w),d1\n"
+"	addxl	%1,%2\n"
+"	moveb	%4@(0,d1:l),d1\n"
+"	andw	d0,%2\n"
+"	moveb	d1,%5@\n"
+"	addw	%6,%5\n"
+
+"	moveb	%3@(0,%2:w),d1\n"
+"	addxl	%1,%2\n"
+"	moveb	%4@(0,d1:l),d1\n"
+"	andw	d0,%2\n"
+"	moveb	d1,%5@\n"
+"	addw	%6,%5\n"
+
+/*"	subqw	#1,%0\n"
+"	bpls	R_DrawColumn_loop"*/
+"	dbra	%0,R_DrawColumn_loop"
+	 	: /* no return value */
+	 	: /* input */
+	 		"d"(count), "d"(fracstep), "d"(frac), "a"(dc_source),
+			"a"(dc_colormap), "a"(dest), "a"(sysvideo.pitch)
+	 	: /* clobbered registers */
+	 		"d0", "d1", "d2", "d3", "a0", "cc", "memory" 
+	);
+#else
 # define RENDER_PIXEL	\
 	{	\
 		*dest = dc_colormap[dc_source[(frac>>FRACBITS)&127]];	\
@@ -82,11 +139,73 @@ void R_DrawColumn (void)
 			case 2:		RENDER_PIXEL;
 			case 1:		RENDER_PIXEL;
 			case 0:		RENDER_PIXEL;
-				} while (n--); /* FIXME subq/bne */
+				} while (--n>=0);
 		}
 	}
 #undef RENDER_PIXEL
+#endif
 }
+
+void R_DrawColumn060 (void) 
+{ 
+	int	count, rshift;
+	byte	*dest, *dest_end;
+	fixed_t	frac, fracstep;
+
+	// Zero length, column does not exceed a pixel.
+	if (dc_yh < dc_yl) 
+		return; 
+				 
+#ifdef RANGECHECK 
+	if ((unsigned)dc_x >= sysvideo.width
+		|| dc_yl < 0 || dc_yh >= sysvideo.height) 
+		I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x); 
+#endif 
+
+	count = dc_yh - dc_yl; 
+
+	// Framebuffer destination address.
+	// Use ylookup LUT to avoid multiply with ScreenWidth.
+	// Use columnofs LUT for subwindows? 
+	dest = ylookup[dc_yl] + columnofs[dc_x];  
+	dest_end = &dest[count*sysvideo.pitch];
+
+	// Determine scaling,
+	//  which is the only mapping to be done.
+	fracstep = dc_iscale; 
+	frac = dc_texturemid + (dc_yl-centery)*fracstep; 
+
+	fracstep <<= 16-7;
+	frac <<= 16-7;
+	rshift = 32-7;
+
+#if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
+    __asm__ __volatile__ (
+"	moveql	#0,d1\n"
+"	movel	%1,d0\n"
+"	lsrl	%2,d0\n"
+
+"R_DrawColumn060_loop:\n"
+"	moveb	%3@(0,d0:w),d1\n"
+"	addl	%0,%1\n"
+"	moveb	%4@(0,d1:l),d1\n"
+"	movel	%1,d0\n"
+"	lsrl	%2,d0\n"
+"	moveb	d1,%5@\n"
+"	cmpal	%7,%5\n"
+"	addw	%6,%5\n"
+
+"	bnes	R_DrawColumn060_loop"
+	 	: /* no return value */
+	 	: /* input */
+	 		"d"(fracstep), "d"(frac), "d"(rshift),
+			"a"(dc_source), "a"(dc_colormap), "a"(dest),
+			"a"(sysvideo.pitch), "a"(dest_end)
+	 	: /* clobbered registers */
+	 		"d0", "d1", "cc", "memory" 
+	);
+#endif
+} 
 
 void R_DrawColumnLow (void)
 {
@@ -125,7 +244,7 @@ void R_DrawColumnLow (void)
 		case 2:		RENDER_PIXEL;
 		case 1:		RENDER_PIXEL;
 		case 0:		RENDER_PIXEL;
-			} while (n--); /* FIXME subq/bne */
+			} while (--n>=0);
 	}
 #undef RENDER_PIXEL
 }
@@ -169,7 +288,7 @@ void R_DrawFuzzColumn (void)
 		case 2:		RENDER_PIXEL;
 		case 1:		RENDER_PIXEL;
 		case 0:		RENDER_PIXEL;
-			} while (n--); /* FIXME subq/bne */
+			} while (--n>=0);
 	}
 #undef RENDER_PIXEL
 }
@@ -216,7 +335,7 @@ void R_DrawFuzzColumnLow (void)
 		case 2:		RENDER_PIXEL;
 		case 1:		RENDER_PIXEL;
 		case 0:		RENDER_PIXEL;
-			} while (n--); /* FIXME subq/bne */
+			} while (--n>=0);
 	}
 #undef RENDER_PIXEL
 }
@@ -266,7 +385,7 @@ void R_DrawAltFuzzColumn (void)
 		case 2:		RENDER_PIXEL;
 		case 1:		RENDER_PIXEL;
 		case 0:		RENDER_PIXEL;
-			} while (n--); /* FIXME subq/bne */
+			} while (--n>=0);
 	}
 #undef RENDER_PIXEL
 }
@@ -313,7 +432,7 @@ void R_DrawAltFuzzColumnLow (void)
 		case 2:		RENDER_PIXEL;
 		case 1:		RENDER_PIXEL;
 		case 0:		RENDER_PIXEL;
-			} while (n--); /* FIXME subq/bne */
+			} while (--n>=0);
 	}
 #undef RENDER_PIXEL
 }
@@ -349,6 +468,64 @@ void R_DrawTranslatedColumn (void)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
+#if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
+    __asm__ __volatile__ (
+	"moveql	#127,d0\n"
+"	swap	%1\n"
+"	swap	%2\n"
+"	andw	d0,%2\n"
+"	moveql	#0,d1\n"
+"	movew	%0,d2\n"	/* d2 = 3-(count&3) */
+"	notw	d2\n"
+"	andw	#3,d2\n"
+"	lea		R_DrawTranslatedColumn_loop,a0\n"
+"	muluw	#R_DrawTranslatedColumn_loop1-R_DrawTranslatedColumn_loop,d2\n"
+"	lsrw	#2,%0\n"
+"	move	#4,ccr\n"
+"	jmp		a0@(0,d2:w)\n"
+
+"R_DrawTranslatedColumn_loop:\n"
+"	moveb	%3@(0,%2:w),d1\n"
+"	addxl	%1,%2\n"
+"	moveb	%7@(0,d1:l),d1\n"
+"	andw	d0,%2\n"
+"	moveb	%4@(0,d1:l),%5@\n"
+"	addw	%6,%5\n"
+
+"R_DrawTranslatedColumn_loop1:\n"
+"	moveb	%3@(0,%2:w),d1\n"
+"	addxl	%1,%2\n"
+"	moveb	%7@(0,d1:l),d1\n"
+"	andw	d0,%2\n"
+"	moveb	%4@(0,d1:l),%5@\n"
+"	addw	%6,%5\n"
+
+"	moveb	%3@(0,%2:w),d1\n"
+"	addxl	%1,%2\n"
+"	moveb	%7@(0,d1:l),d1\n"
+"	andw	d0,%2\n"
+"	moveb	%4@(0,d1:l),%5@\n"
+"	addw	%6,%5\n"
+
+"	moveb	%3@(0,%2:w),d1\n"
+"	addxl	%1,%2\n"
+"	moveb	%7@(0,d1:l),d1\n"
+"	andw	d0,%2\n"
+"	moveb	%4@(0,d1:l),%5@\n"
+"	addw	%6,%5\n"
+
+/*"	subqw	#1,%0\n"
+"	bpls	R_DrawTranslatedColumn_loop"*/
+"	dbra	%0,R_DrawTranslatedColumn_loop"
+	 	: /* no return value */
+	 	: /* input */
+	 		"d"(count), "d"(fracstep), "d"(frac), "a"(dc_source),
+			"a"(dc_colormap), "a"(dest), "a"(sysvideo.pitch),
+			"a"(dc_translation)
+	 	: /* clobbered registers */
+	 		"d0", "d1", "d2", "d3", "a0", "cc", "memory" 
+	);
+#else
 #define RENDER_PIXEL	\
 	*dest = dc_colormap[dc_translation[dc_source[(frac>>FRACBITS)&127]]];	\
 	dest += sysvideo.pitch; 	\
@@ -362,10 +539,11 @@ void R_DrawTranslatedColumn (void)
 			case 2:		RENDER_PIXEL;
 			case 1:		RENDER_PIXEL;
 			case 0:		RENDER_PIXEL;
-				} while (n--); /* FIXME subq/bne */
+				} while (--n>=0);
 		}
 	}
 #undef RENDER_PIXEL
+#endif
 }
 
 void R_DrawTranslatedColumnLow (void)
@@ -408,7 +586,7 @@ void R_DrawTranslatedColumnLow (void)
 			case 2:		RENDER_PIXEL;
 			case 1:		RENDER_PIXEL;
 			case 0:		RENDER_PIXEL;
-				} while (n--); /* FIXME subq/bne */
+				} while (--n>=0);
 		}
 	}
 #undef RENDER_PIXEL
@@ -456,7 +634,7 @@ void R_DrawTranslatedFuzzColumn (void)
 			case 2:		RENDER_PIXEL;
 			case 1:		RENDER_PIXEL;
 			case 0:		RENDER_PIXEL;
-				} while (n--); /* FIXME subq/bne */
+				} while (--n>=0);
 		}
 	}
 #undef RENDER_PIXEL
@@ -503,7 +681,7 @@ void R_DrawTranslatedFuzzColumnLow (void)
 			case 2:		RENDER_PIXEL;
 			case 1:		RENDER_PIXEL;
 			case 0:		RENDER_PIXEL;
-				} while (n--); /* FIXME subq/bne */
+				} while (--n>=0);
 		}
 	}
 #undef RENDER_PIXEL
@@ -575,6 +753,75 @@ void R_DrawSpan (void)
 	dest = ylookup[ds_y] + columnofs[ds_x1];	
 	count = ds_x2 - ds_x1;
 
+#if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
+	{
+		long uv, uvstep;
+
+		uv = (ds_yfrac >> 6) & 0xffffUL;
+		uv |= (ds_xfrac<<10) & 0xffff0000UL;
+
+		uvstep = (ds_ystep>>6) & 0xffffUL;
+		uvstep |= (ds_xstep<<10) & 0xffff0000UL;
+
+    __asm__ __volatile__ (
+	"moveql	#0,d1\n"
+"	moveql	#10,d2\n"
+"	moveql	#6,d3\n"
+"	movel	%5,d0\n"
+
+"	movew	%0,d4\n"
+"	notw	d4\n"
+"	andw	#3,d4\n"
+"	lea		R_DrawSpan_loop,a0\n"
+"	muluw	#R_DrawSpan_loop1-R_DrawSpan_loop,d4\n"
+"	lsrw	#2,%0\n"
+"	jmp		a0@(0,d4:w)\n"
+
+"R_DrawSpan_loop:\n"
+"	lsrw	d2,d0\n"
+"	roll	d3,d0\n"
+"	moveb	%1@(0,d0:w),d1\n"
+"	addl	%2,%5\n"
+"	moveb	%3@(0,d1:l),d1\n"
+"	movel	%5,d0\n"
+"	moveb	d1,%4@+\n"
+
+"R_DrawSpan_loop1:\n"
+"	lsrw	d2,d0\n"
+"	roll	d3,d0\n"
+"	moveb	%1@(0,d0:w),d1\n"
+"	addl	%2,%5\n"
+"	moveb	%3@(0,d1:l),d1\n"
+"	movel	%5,d0\n"
+"	moveb	d1,%4@+\n"
+
+"	lsrw	d2,d0\n"
+"	roll	d3,d0\n"
+"	moveb	%1@(0,d0:w),d1\n"
+"	addl	%2,%5\n"
+"	moveb	%3@(0,d1:l),d1\n"
+"	movel	%5,d0\n"
+"	moveb	d1,%4@+\n"
+
+"	lsrw	d2,d0\n"
+"	roll	d3,d0\n"
+"	moveb	%1@(0,d0:w),d1\n"
+"	addl	%2,%5\n"
+"	moveb	%3@(0,d1:l),d1\n"
+"	movel	%5,d0\n"
+"	moveb	d1,%4@+\n"
+
+"	subqw	#1,%0\n"
+"	bpls	R_DrawSpan_loop"
+	 	: /* no return value */
+	 	: /* input */
+	 		"d"(count), "a"(ds_source), "d"(uvstep), "a"(ds_colormap),
+			"a"(dest), "d"(uv)
+	 	: /* clobbered registers */
+	 		"d0", "d1", "d2", "d3", "d4", "a0", "cc", "memory" 
+	);
+	}
+#else
 # define RENDER_PIXEL	\
 	{	\
 	    int spot;	\
@@ -601,10 +848,11 @@ void R_DrawSpan (void)
 			case 2:		RENDER_PIXEL;
 			case 1:		RENDER_PIXEL;
 			case 0:		RENDER_PIXEL;
-				} while (n--); /* FIXME subq/bne */
+				} while (--n>=0);
 		}
 	}
 #undef RENDER_PIXEL
+#endif
 }
 
 void R_DrawSpanFlat (void) 
@@ -646,6 +894,80 @@ void R_DrawSpanLow (void)
 	dest = ylookup[ds_y] + columnofs[ds_x1<<1];
 	count = ds_x2 - ds_x1;
 
+#if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
+	{
+		long uv, uvstep;
+
+		uv = (ds_yfrac >> 6) & 0xffffUL;
+		uv |= (ds_xfrac<<10) & 0xffff0000UL;
+
+		uvstep = (ds_ystep>>6) & 0xffffUL;
+		uvstep |= (ds_xstep<<10) & 0xffff0000UL;
+
+    __asm__ __volatile__ (
+	"moveql	#0,d1\n"
+"	moveql	#10,d2\n"
+"	moveql	#6,d3\n"
+"	movel	%5,d0\n"
+"	lsrw	d2,d0\n"
+
+"	movew	%0,d4\n"
+"	notw	d4\n"
+"	andw	#3,d4\n"
+"	lea		R_DrawSpanLow_loop,a0\n"
+"	muluw	#R_DrawSpanLow_loop1-R_DrawSpanLow_loop,d4\n"
+"	lsrw	#2,%0\n"
+"	jmp		a0@(0,d4:w)\n"
+
+"R_DrawSpanLow_loop:\n"
+"	roll	d3,d0\n"
+"	moveb	%1@(0,d0:w),d1\n"
+"	addl	%2,%5\n"
+"	moveb	%3@(0,d1:l),d1\n"
+"	movel	%5,d0\n"
+"	moveb	d1,%4@+\n"
+"	lsrw	d2,d0\n"
+"	moveb	d1,%4@+\n"
+
+"R_DrawSpanLow_loop1:\n"
+"	roll	d3,d0\n"
+"	moveb	%1@(0,d0:w),d1\n"
+"	addl	%2,%5\n"
+"	moveb	%3@(0,d1:l),d1\n"
+"	movel	%5,d0\n"
+"	moveb	d1,%4@+\n"
+"	lsrw	d2,d0\n"
+"	moveb	d1,%4@+\n"
+
+"	roll	d3,d0\n"
+"	moveb	%1@(0,d0:w),d1\n"
+"	addl	%2,%5\n"
+"	moveb	%3@(0,d1:l),d1\n"
+"	movel	%5,d0\n"
+"	moveb	d1,%4@+\n"
+"	lsrw	d2,d0\n"
+"	moveb	d1,%4@+\n"
+
+"	roll	d3,d0\n"
+"	moveb	%1@(0,d0:w),d1\n"
+"	addl	%2,%5\n"
+"	moveb	%3@(0,d1:l),d1\n"
+"	movel	%5,d0\n"
+"	moveb	d1,%4@+\n"
+"	lsrw	d2,d0\n"
+"	moveb	d1,%4@+\n"
+
+"	subqw	#1,%0\n"
+"	bpls	R_DrawSpanLow_loop"
+	 	: /* no return value */
+	 	: /* input */
+	 		"d"(count), "a"(ds_source), "d"(uvstep), "a"(ds_colormap),
+			"a"(dest), "d"(uv)
+	 	: /* clobbered registers */
+	 		"d0", "d1", "d2", "d3", "d4", "a0", "cc", "memory" 
+	);
+	}
+#else
 # define RENDER_PIXEL	\
 	{	\
 	    int spot;	\
@@ -673,10 +995,11 @@ void R_DrawSpanLow (void)
 			case 2:		RENDER_PIXEL;
 			case 1:		RENDER_PIXEL;
 			case 0:		RENDER_PIXEL;
-				} while (n--); /* FIXME subq/bne */
+				} while (--n>=0);
 		}
 	}
 #undef RENDER_PIXEL
+#endif
 }
 
 void R_DrawSpanLowFlat (void) 

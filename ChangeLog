@@ -2,8 +2,9 @@
 *                     Changes done to Hexen sources                     *
 \***********************************************************************/
 
--------------------------------- 0.53 -----------------------------------
+-------------------------------- 0.54 -----------------------------------
 
+- Atari: more rendering optimizations, special 060 routine.
 - Fixed crash in audio on exit.
 - Unrolled 4x rendering loops, a bit faster.
 - Rewritten CD music player for SDL.

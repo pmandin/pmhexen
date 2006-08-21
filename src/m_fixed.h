@@ -28,8 +28,20 @@
 
 typedef int fixed_t;
 
-fixed_t FixedMul	(fixed_t a, fixed_t b);
-fixed_t FixedDiv	(fixed_t a, fixed_t b);
-fixed_t FixedDiv2	(fixed_t a, fixed_t b);
+extern fixed_t (*FixedMul) (fixed_t a, fixed_t b);
+extern fixed_t (*FixedDiv2) (fixed_t a, fixed_t b);
+
+fixed_t FixedMulSoft (fixed_t a, fixed_t b);
+fixed_t FixedDiv (fixed_t a, fixed_t b);
+fixed_t FixedDiv2Soft (fixed_t a, fixed_t b);
+
+#if defined(__GNUC__) && (defined(__M68000__) || defined(__M68020__))
+
+fixed_t FixedMul020 (fixed_t a, fixed_t b);
+fixed_t FixedDiv2020 (fixed_t a, fixed_t b);
+
+fixed_t FixedMul060 (fixed_t a, fixed_t b);
+fixed_t FixedDiv2060 (fixed_t a, fixed_t b);
+#endif
 
 #endif

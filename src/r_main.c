@@ -3,8 +3,8 @@
 // ** r_main.c : Heretic 2 : Raven Software, Corp.
 // **
 // ** $RCSfile: r_main.c,v $
-// ** $Revision: 1.1 $
-// ** $Date: 2006/08/18 20:49:16 $
+// ** $Revision: 1.2 $
+// ** $Date: 2006/08/21 13:18:31 $
 // ** $Author: patrice $
 // **
 // **************************************************************************
@@ -13,6 +13,7 @@
 
 #include "h2def.h"
 #include "r_local.h"
+#include "i_system.h"
 #include "i_video.h"
 
 int			viewangleoffset;
@@ -596,7 +597,11 @@ void R_ExecuteSetViewSize (void)
 
 	if (!detailshift)
 	{
-		colfunc = basecolfunc = R_DrawColumn;
+		if (sysgame.cpu060) {
+			colfunc = basecolfunc = R_DrawColumn060;
+		} else {
+			colfunc = basecolfunc = R_DrawColumn;
+		}
 		fuzzcolfunc = R_DrawFuzzColumn;
 		transcolfunc = R_DrawTranslatedColumn;
 		if (sysvideo.textured_spans)
