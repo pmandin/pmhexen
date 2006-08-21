@@ -4,7 +4,7 @@ AM_CFLAGS = -Wall
 
 bin_PROGRAMS = hexen
 
-header_files = am_data.h am_map.h ct_chat.h drcoord.h dstrings.h h2def.h \
+header_files = am_data.h am_map.h ct_chat.h dstrings.h h2def.h \
 	i_audio.h i_music.h i_net.h info.h i_qmus2mid.h i_sound.h i_system.h \
 	i_video.h p_local.h p_spec.h r_local.h sounds.h soundst.h st_start.h \
 	textdefs.h xddefs.h m_swap.h m_fixed.h i_cdmus.h
