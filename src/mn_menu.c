@@ -1752,4 +1752,9 @@ void M_ChangeDetail(void)
     detailLevel = 1 - detailLevel;
 
     R_SetViewSize (screenblocks, detailLevel);
+
+	if (!detailLevel)
+		P_SetMessage(&players[consoleplayer], "HIGH DETAIL", true);
+	else
+		P_SetMessage(&players[consoleplayer], "LOW DETAIL", true);
 }
