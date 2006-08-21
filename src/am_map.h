@@ -2,11 +2,6 @@
 // **
 // ** am_map.h : Heretic 2 : Raven Software, Corp.
 // **
-// ** $RCSfile: am_map.h,v $
-// ** $Revision: 1.1 $
-// ** $Date: 2006/08/18 20:49:17 $
-// ** $Author: patrice $
-// **
 // **************************************************************************
 
 #ifndef __AMMAP_H__

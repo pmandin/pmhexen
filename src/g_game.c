@@ -2,11 +2,6 @@
 // **
 // ** g_game.c : Heretic 2 : Raven Software, Corp.
 // **
-// ** $RCSfile: g_game.c,v $
-// ** $Revision: 1.1 $
-// ** $Date: 2006/08/18 20:49:16 $
-// ** $Author: patrice $
-// **
 // **************************************************************************
 
 #include <string.h>

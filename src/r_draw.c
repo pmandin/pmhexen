@@ -2,11 +2,6 @@
 // **
 // ** r_draw.c : Heretic 2 : Raven Software, Corp.
 // **
-// ** $RCSfile: r_draw.c,v $
-// ** $Revision: 1.3 $
-// ** $Date: 2006/08/21 13:18:31 $
-// ** $Author: patrice $
-// **
 // **************************************************************************
 
 #include "h2def.h"

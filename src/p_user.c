@@ -2,11 +2,6 @@
 // **
 // ** p_user.c : Heretic 2 : Raven Software, Corp.
 // **
-// ** $RCSfile: p_user.c,v $
-// ** $Revision: 1.1 $
-// ** $Date: 2006/08/18 20:49:16 $
-// ** $Author: patrice $
-// **
 // **************************************************************************
 
 #include "h2def.h"

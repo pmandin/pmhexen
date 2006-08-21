@@ -2,11 +2,6 @@
 // **
 // ** r_main.c : Heretic 2 : Raven Software, Corp.
 // **
-// ** $RCSfile: r_main.c,v $
-// ** $Revision: 1.2 $
-// ** $Date: 2006/08/21 13:18:31 $
-// ** $Author: patrice $
-// **
 // **************************************************************************
 
 #include <math.h>

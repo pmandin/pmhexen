@@ -2,11 +2,6 @@
 // **
 // ** d_net.c : Heretic 2 : Raven Software, Corp.
 // **
-// ** $RCSfile: d_net.c,v $
-// ** $Revision: 1.2 $
-// ** $Date: 2006/08/18 20:52:59 $
-// ** $Author: patrice $
-// **
 // ** This version has the fixed ticdup code.
 // **
 // **************************************************************************

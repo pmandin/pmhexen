@@ -2,11 +2,6 @@
 // **
 // ** r_local.h : Heretic 2 : Raven Software, Corp.
 // **
-// ** $RCSfile: r_local.h,v $
-// ** $Revision: 1.2 $
-// ** $Date: 2006/08/21 13:18:31 $
-// ** $Author: patrice $
-// **
 // **************************************************************************
 
 #ifndef __R_LOCAL__
