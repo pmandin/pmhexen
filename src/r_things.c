@@ -429,7 +429,7 @@ void R_DrawVisSprite (vissprite_t *vis, int x1, int x2)
 	if(vis->psprite)
 	{
 		dc_texturemid += FixedMul(((centery-viewheight/2)<<FRACBITS),
-			vis->xiscale);
+			vis->xiscale >> detailshift);
 		sprtopscreen += (viewheight/2-centery)<<FRACBITS;
 	}
 
