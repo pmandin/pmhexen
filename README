@@ -44,7 +44,3 @@ You need the PC version of Hexen (shareware or registered).
 	Network: '-network <type>'
 		unix:	Unix sockets network (default)
 		sting:	Sting sockets network (Atari only)
-
--- 
-Patrice Mandin <pmandin@caramail.com>
-Web:	http://pmandin.atari.org/

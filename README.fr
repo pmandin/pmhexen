@@ -50,7 +50,3 @@ ou enregistre).
 	Reseau: '-network <type>'
 		unix:	gestion Unix du reseau (par defaut)
 		sting:	gestion Sting du reseau (Atari seulement)
-
--- 
-Patrice Mandin <pmandin@caramail.com>
-Web:	http://pmandin.atari.org/
