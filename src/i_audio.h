@@ -31,9 +31,11 @@ void I_ShutdownAudio(void);
 
 typedef struct {
 	boolean enabled;
+	boolean convert;
 	int	music;
 	SDL_AudioSpec	desired;
 	SDL_AudioSpec	obtained;
+	SDL_AudioCVT	audioCvt;
 } sysaudio_t;
 
 extern sysaudio_t sysaudio;
