@@ -11,6 +11,13 @@ You need the PC version of Hexen (shareware or registered).
 	  If set, configuration and saved games are put in $HOME/.hexen directory.
 	  If not set, configuration and saved games are put in current directory.
 
+* Game data files:
+
+  For proper behaviour and avoid misdetection, game files must be names like
+this:
+
+hexen.wad	Hexen, commercial or demo
+
 * Common parameters:
 
 	'@filename' or '-response filename' to read parameters from a file.
@@ -30,6 +37,8 @@ You need the PC version of Hexen (shareware or registered).
 	'-yieldcpu [on|off]' to free some CPU time (default is off for Atari,
 	 and on for other systems).
 	'-cdmusic' to play music from CD instead of MIDI.
+	'-iwad /path/to/filename.wad' if game data file is not in current
+	  directory.
 
 	Use Alt+Enter to toggle between fullscreen and windowed mode.
 	Use Alt+G to toggle mouse grabbing.
@@ -44,3 +53,7 @@ You need the PC version of Hexen (shareware or registered).
 	Network: '-network <type>'
 		unix:	Unix sockets network (default)
 		sting:	Sting sockets network (Atari only)
+
+-- 
+Patrice Mandin <patmandin@gmail.com>
+http://pmandin.atari.org/

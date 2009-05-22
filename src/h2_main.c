@@ -366,6 +366,10 @@ static void HandleArgs(void)
     if (p) {
 		i_CDMusic = true;
 	}
+	p=M_CheckParm ("-iwad");
+	if (p && (p<myargc-1)) {
+		wadfiles[0] = myargv[p+1];
+	}
 
 	// Process command line options
 	for(opt = ExecOptions; opt->name != NULL; opt++)
