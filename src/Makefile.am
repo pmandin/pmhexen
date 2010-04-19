@@ -17,6 +17,7 @@ hexen_SOURCES = a_action.c am_map.c ct_chat.c d_net.c f_finale.c g_game.c \
 	p_setup.c p_sight.c p_spec.c p_switch.c p_telept.c p_things.c p_tick.c \
 	p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_segs.c r_things.c \
 	sb_bar.c sc_man.c sn_sonix.c sounds.c st_start.c sv_save.c tables.c \
-	v_video.c w_wad.c z_zone.c m_swap.c m_fixed.c soundst.c i_cdmus.c
+	v_video.c w_wad.c z_zone.c m_swap.c m_fixed.c soundst.c i_cdmus.c \
+	m_fixed_020.S m_fixed_060.S
 
 EXTRA_DIST = $(header_files)
