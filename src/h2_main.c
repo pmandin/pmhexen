@@ -329,6 +329,10 @@ static void HandleArgs(void)
     if (p) {
 		sysvideo.textured_spans = false;
 	}
+	p=M_CheckParm ("-overlay");
+    if (p) {
+		sysvideo.overlay = true;
+	}
 	p=M_CheckParm ("-yieldcpu");
     if (p && (p<myargc-1)) {
 		if (strcmp(myargv[p+1],"off")==0) {

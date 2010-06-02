@@ -7,7 +7,7 @@ bin_PROGRAMS = hexen
 header_files = am_data.h am_map.h ct_chat.h dstrings.h h2def.h \
 	i_audio.h i_music.h i_net.h info.h i_qmus2mid.h i_sound.h i_system.h \
 	i_video.h p_local.h p_spec.h r_local.h sounds.h soundst.h st_start.h \
-	textdefs.h xddefs.h m_swap.h m_fixed.h i_cdmus.h
+	textdefs.h xddefs.h m_swap.h m_fixed.h i_cdmus.h i_rgb2yuv.h
 
 hexen_SOURCES = a_action.c am_map.c ct_chat.c d_net.c f_finale.c g_game.c \
 	h2_main.c i_audio.c i_music.c i_net.c i_net_sting.c i_net_unix.c info.c \
@@ -18,6 +18,6 @@ hexen_SOURCES = a_action.c am_map.c ct_chat.c d_net.c f_finale.c g_game.c \
 	p_user.c r_bsp.c r_data.c r_draw.c r_main.c r_plane.c r_segs.c r_things.c \
 	sb_bar.c sc_man.c sn_sonix.c sounds.c st_start.c sv_save.c tables.c \
 	v_video.c w_wad.c z_zone.c m_swap.c m_fixed.c soundst.c i_cdmus.c \
-	m_fixed_020.S m_fixed_060.S
+	i_rgb2yuv.c m_fixed_020.S m_fixed_060.S
 
 EXTRA_DIST = $(header_files)

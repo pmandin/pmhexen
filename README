@@ -39,6 +39,7 @@ hexen.wad	Hexen, commercial or demo
 	'-cdmusic' to play music from CD instead of MIDI.
 	'-iwad /path/to/filename.wad' if game data file is not in current
 	  directory.
+	'-overlay' use SDL YUV Overlay if available to scale screen.
 
 	Use Alt+Enter to toggle between fullscreen and windowed mode.
 	Use Alt+G to toggle mouse grabbing.
