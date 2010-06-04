@@ -331,7 +331,7 @@ static void HandleArgs(void)
 	}
 	p=M_CheckParm ("-overlay");
     if (p) {
-		sysvideo.overlay = true;
+		sysvideo.overlay = sysvideo.resize = true;
 	}
 	p=M_CheckParm ("-yieldcpu");
     if (p && (p<myargc-1)) {
