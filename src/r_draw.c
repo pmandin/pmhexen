@@ -62,9 +62,7 @@ void R_DrawColumn (void)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
-#if defined(__GNUC__) \
-	&& (defined(__M68000__) || defined(__M68020__)) \
-	&& !defined(__mcoldfire__)
+#if defined(__GNUC__) && (defined(__m68k__) && !defined(__mcoldfire__))
 
     __asm__ __volatile__ (
 	"moveql	#127,d0\n"
@@ -177,9 +175,7 @@ void R_DrawColumn060 (void)
 	frac <<= 16-7;
 	rshift = 32-7;
 
-#if defined(__GNUC__) \
-	&& (defined(__M68000__) || defined(__M68020__)) \
-	&& !defined(__mcoldfire__)
+#if defined(__GNUC__) && (defined(__m68k__) && !defined(__mcoldfire__))
 
     __asm__ __volatile__ (
 "	moveql	#0,d1\n"
@@ -469,9 +465,7 @@ void R_DrawTranslatedColumn (void)
 	fracstep = dc_iscale;
 	frac = dc_texturemid + (dc_yl-centery)*fracstep;
 
-#if defined(__GNUC__) \
-	&& (defined(__M68000__) || defined(__M68020__)) \
-	&& !defined(__mcoldfire__)
+#if defined(__GNUC__) && (defined(__m68k__) && !defined(__mcoldfire__))
 
     __asm__ __volatile__ (
 	"moveql	#127,d0\n"
@@ -757,9 +751,7 @@ void R_DrawSpan (void)
 	dest = ylookup[ds_y] + columnofs[ds_x1];	
 	count = ds_x2 - ds_x1;
 
-#if defined(__GNUC__) \
-	&& (defined(__M68000__) || defined(__M68020__)) \
-	&& !defined(__mcoldfire__)
+#if defined(__GNUC__) && (defined(__m68k__) && !defined(__mcoldfire__))
 
 	{
 		long uv, uvstep;
@@ -901,9 +893,7 @@ void R_DrawSpanLow (void)
 	dest = ylookup[ds_y] + columnofs[ds_x1<<1];
 	count = ds_x2 - ds_x1;
 
-#if defined(__GNUC__) \
-	&& (defined(__M68000__) || defined(__M68020__)) \
-	&& !defined(__mcoldfire__)
+#if defined(__GNUC__) && (defined(__m68k__) && !defined(__mcoldfire__))
 
 	{
 		long uv, uvstep;
