@@ -33,6 +33,16 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([atexit gethostbyname isascii memset mkdir pow socket \
 strcasecmp strerror strncasecmp strupr strtol])
 
+case "$host" in
+	m68k*)
+		AC_CHECK_DEFINE([__m68k__], [],
+			[CFLAGS="$CFLAGS -D__m68k__"]
+		)
+		;;
+	*)
+		;;
+esac	
+
 # More library stuff
 
 # Math
