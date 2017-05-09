@@ -67,7 +67,7 @@ int I_GetTime (void)
 {
     int			newtics;
     static int		basetime=0;
-  
+
     if (!basetime)
 	basetime = SDL_GetTicks();
     newtics = ((SDL_GetTicks()-basetime)*TICRATE)/1000;
@@ -143,10 +143,13 @@ void I_Init (void)
 static void I_InitFpu(void)
 {
 #if defined(__MINT__) && !defined(__mcoldfire__)
-	long cpu_cookie;
+	long cpu_cookie, fpu_cookie;
 
 	if (Getcookie(C__CPU, &cpu_cookie) != C_FOUND) {
 		return;
+	}
+	if (Getcookie(C__FPU, &fpu_cookie) != C_FOUND) {
+		fpu_cookie = 0;
 	}
 
 	cpu_cookie &= 0xffff;
@@ -158,22 +161,24 @@ static void I_InitFpu(void)
 	FixedDiv2 = FixedDiv2020;
 
 	if (cpu_cookie==60) {
-	    __asm__ __volatile__ (
-				".chip	68060\n"
-			"	fmove%.l	fpcr,d0\n"
-			"	andl	#~0x30,d0\n"
-			"	orb		#0x20,d0\n"
-			"	fmove%.l	d0,fpcr\n"
-#ifdef __mc68020__
-			"	.chip	68020"
+		if ((fpu_cookie>>16) & 0xfffe) == 16) {
+			__asm__ __volatile__ (
+					".chip	68060\n"
+				"	fmove%.l	fpcr,d0\n"
+				"	andl	#~0x30,d0\n"
+				"	orb		#0x20,d0\n"
+				"	fmove%.l	d0,fpcr\n"
+#if defined(__mc68020__)
+				"	.chip	68020"
 #else
-			"	.chip	68000"
+				"	.chip	68000"
 #endif
-			: /* no return value */
-			: /* no input */
-			: /* clobbered registers */
-				"d0", "cc"
-		);
+				: /* no return value */
+				: /* no input */
+				: /* clobbered registers */
+					"d0", "cc"
+			);
+		}
 
 		FixedMul = FixedMul060;
 		FixedDiv2 = FixedDiv2060;
@@ -195,6 +200,9 @@ static void I_InitFpu(void)
 void I_Shutdown (void)
 {
 	S_ShutDown ();
+	if (i_CDMusic) {
+		I_CDMusShutdown();
+	}
 	I_ShutdownNetwork();
 	I_ShutdownAudio();
 	I_ShutdownGraphics();
